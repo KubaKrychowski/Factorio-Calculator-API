@@ -1,0 +1,68 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  - none
+
+pool:
+  vmImage: 'windows-latest'
+
+variables: 
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  solution: '**/Factorio-Calculator-API.sln'
+  project: '**/WebApi.csproj'
+  testProject: '**/IntegrationTests.csproj'
+
+steps:
+- task: NuGetToolInstaller@1
+  name: 'NuGetToolInstaller'
+  displayName: 'NuGet tool installer'
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+    feedsToUse: 'select'
+  name: 'NuGetRestore'
+  displayName: 'NuGet restore packages'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**\*.csproj'
+    arguments: '--configuration ${BuildConfiguration}'
+  name: 'Build'
+  displayName: 'Build'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '${testProject}'
+    arguments: '--configuration ${BuildConfiguration}'
+  name: 'Tests'
+  displayName: 'Run tests'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '**\*.csproj'
+    arguments: '--configuration ${BuildConfiguration} --output ${Build.ArtifactStagingDirectory}'
+    zipAfterPublish: false
+  name: 'Publish'
+  displayName: 'Publish'
+
+- task: CopyFiles@2
+  inputs:
+    targetFolder: '$(Build.ArtifactStagingDirectory)'  
+    
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'FactorioCalculatorAPI'
+    publishLocation: 'Container'
+  name: 'PublishBuildArtifacts'
+  displayName: 'Publish build artifacts'
