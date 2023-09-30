@@ -31,4 +31,8 @@
 	<PropertyGroup>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="IntegrationTests" />
+  </ItemGroup>
 </Project>
